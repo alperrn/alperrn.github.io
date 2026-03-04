@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Yönetimi (Admin) - YKS İstasyonu</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <style>
+        .admin-lock { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; } 
+        .admin-panel { display: none; padding-bottom: 50px; } 
+        .admin-card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); height: 100%; }
+        .feedback-item { background: var(--bg-color); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px; }
+        .code-item { background: var(--bg-color); padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); margin-bottom: 10px; font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema Değiştir">☀️/🌙</button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">☰</button>
+    </div>
+    
+    <div class="side-menu" id="sideMenu">
+        <nav><a href="index.html">Ana Sayfaya Dön</a></nav>
+    </div>
+
+    <div class="container" style="max-width: 1000px; width: 95%;">
+        
+        <div id="lockScreen" class="admin-lock">
+            <img src="logo.svg" alt="YKS Logo" style="width: 100px; margin-bottom: 1.5rem;">
+            <h1 style="color: #e74c3c; margin-bottom: 0.5rem;">🔒 Yetkili Girişi</h1>
+            <p style="opacity: 0.7; margin-bottom: 1.5rem;">Sistem yöneticisi paneline erişmek için şifrenizi girin.</p>
+            <input type="password" id="adminPwd" placeholder="Admin Şifresi" style="max-width: 350px; text-align: center; border: 2px solid #e74c3c;">
+            <button class="btn" style="background: #e74c3c; width: 100%; max-width: 350px;" onclick="adminLogin()">Sisteme Giriş Yap</button>
+        </div>
+
+        <div id="panelScreen" class="admin-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <img src="logo.svg" alt="Logo" style="width: 50px;">
+                    <h1 style="color: #e74c3c; margin: 0;">Yönetim Paneli</h1>
+                </div>
+                <button class="btn" style="background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color);" onclick="adminLogout()">Güvenli Çıkış</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+                
+                <div class="admin-card" style="border-top: 4px solid #e74c3c;">
+                    <h3 style="color: #e74c3c;">📢 Toplu Duyuru & Bildirim</h3>
+                    <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 1rem;">Buradan yazacağınız mesajlar tüm kullanıcıların ekranına anında düşer.</p>
+                    <textarea id="adminNotifText" rows="4" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); margin-bottom: 1rem; font-family: inherit;" placeholder="Duyuru metnini buraya yazın..."></textarea>
+                    <button class="btn" style="width: 100%; background: #e74c3c;" onclick="sendGlobalNotif()">📢 Duyuruyu Herkese Yayınla</button>
+                    <button class="btn" style="width: 100%; background: transparent; border: 1px solid #e74c3c; color: #e74c3c; margin-top: 0.5rem;" onclick="clearAllNotifs()">🗑️ Tüm Bildirimleri Temizle</button>
+                </div>
+
+                <div class="admin-card" style="border-top: 4px solid #f1c40f;">
+                    <h3 style="color: #f39c12;">👑 Premium Kod Üretici</h3>
+                    <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 1rem;">Firmaya özel kapasiteli ve süreli kodlar oluşturun.</p>
+                    
+                    <input type="text" id="companyInput" placeholder="Kurum / Firma Adı (Örn: Final Okulları)">
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="maxStInput" value="10" min="1" title="Öğrenci Kapasitesi" placeholder="Kapasite">
+                        <input type="number" id="daysInput" value="30" min="0" title="Süre (Gün)" placeholder="Gün (0=Sınırsız)">
+                    </div>
+                    
+                    <button class="btn" style="width: 100%; background: #f1c40f; color: #2c3e50;" onclick="createPremiumCode()">💎 Yeni Premium Kod Üret</button>
+                    
+                    <h4 style="margin-top: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Son Üretilen Kodlar:</h4>
+                    <ul id="codeList" style="list-style: none; max-height: 250px; overflow-y: auto; margin-top: 0.8rem;">
+                        <li style="text-align:center; opacity:0.5;">Yükleniyor...</li>
+                    </ul>
+                </div>
+
+                <div class="admin-card" style="grid-column: 1 / -1; border-top: 4px solid #3498db;">
+                    <h3 style="color: #3498db;">💡 Gelen İstek, Öneri ve Hatalar</h3>
+                    <p style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 1.5rem;">Kullanıcıların profil ve iletişim bilgileriyle birlikte gönderdiği mesajlar.</p>
+                    
+                    <div id="feedbackList" style="display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto;">
+                        <div style="text-align:center; opacity:0.5; padding: 2rem;">Henüz bir geri bildirim bulunmuyor.</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    
+    <script type="module">
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+        
+        // app.js'nin yüklenmesini bekleyen kontrol mekanizması
+        const authInterval = setInterval(() => {
+            if(window.yksAuth) {
+                clearInterval(authInterval);
+                initAdminAuth();
+            }
+        }, 100);
+
+        function initAdminAuth() {
+            onAuthStateChanged(window.yksAuth, (user) => {
+                if (user && user.email === 'admin@yksistasyonu.com') {
+                    document.getElementById('lockScreen').style.display = 'none'; 
+                    document.getElementById('panelScreen').style.display = 'block'; 
+                    loadAdminData();
+                } else {
+                    document.getElementById('lockScreen').style.display = 'flex'; 
+                    document.getElementById('panelScreen').style.display = 'none';
+                }
+            });
+        }
+
+        function loadAdminData() {
+            if(window.loadCodes) window.loadCodes();
+            if(window.loadFeedbacks) window.loadFeedbacks();
+        }
+
+        // --- GİRİŞ / ÇIKIŞ ---
+        window.adminLogin = async function() { 
+            const pwd = document.getElementById('adminPwd').value; 
+            if(!pwd) return alert("Lütfen şifrenizi girin!"); 
+            try { 
+                await window.yksSignIn(window.yksAuth, 'admin@yksistasyonu.com', pwd); 
+            } catch(e) { 
+                alert("Giriş Başarısız!\n\nHata Mesajı: " + (e.message || "Bilinmiyor")); 
+                document.getElementById('adminPwd').value = ''; 
+            } 
+        };
+
+        window.adminLogout = function() { 
+            signOut(window.yksAuth).then(() => { window.location.reload(); }); 
+        };
+
+        // --- DUYURU SİSTEMİ ---
+        window.sendGlobalNotif = async function() { 
+            const text = document.getElementById('adminNotifText').value;
+            if(!text) return alert("Duyuru metni boş olamaz!");
+            if(confirm("Bu mesaj tüm kullanıcılara iletilecek. Onaylıyor musunuz?")) {
+                const ok = await window.sendNotification("all", text, "Yönetim Merkezi");
+                if(ok) { 
+                    alert("Duyuru başarıyla yayınlandı!"); 
+                    document.getElementById('adminNotifText').value = ''; 
+                }
+            }
+        };
+
+        window.clearAllNotifs = async function() {
+            if(confirm("TÜM geçmiş bildirimler silinecek. Bu işlem geri alınamaz!")) {
+                const ok = await window.clearAllNotifications();
+                if(ok) alert("Bildirim geçmişi temizlendi.");
+            }
+        };
+
+        // --- PREMIUM KOD SİSTEMİ ---
+        window.createPremiumCode = async function() {
+            const company = document.getElementById('companyInput').value.trim();
+            const maxSt = document.getElementById('maxStInput').value;
+            const days = document.getElementById('daysInput').value;
+
+            if(!company) return alert("Lütfen bir firma/kurum adı girin!");
+            if(!maxSt || maxSt < 1) return alert("Geçerli bir kapasite girin.");
+            
+            const code = await window.generatePremiumCode(maxSt, days, company);
+            if(code) { 
+                alert(`KOD OLUŞTURULDU!\n\nFirma: ${company}\nKod: ${code}\nKapasite: ${maxSt} Öğrenci`); 
+                document.getElementById('companyInput').value = '';
+                window.loadCodes(); 
+            }
+        }
+
+        window.deactivateCode = async function(codeId) {
+            if(confirm(codeId + " kodunu iptal etmek istediğinize emin misiniz?")) {
+                const ok = await window.deactivatePremiumCode(codeId);
+                if(ok) window.loadCodes();
+            }
+        }
+
+        window.loadCodes = async function() {
+            const list = document.getElementById('codeList'); 
+            const codes = await window.getPremiumCodes(); 
+            list.innerHTML = '';
+            
+            if(codes.length === 0) {
+                list.innerHTML = '<li style="text-align:center; opacity:0.5;">Üretilmiş kod bulunmuyor.</li>';
+                return;
+            }
+
+            codes.forEach(c => {
+                let statusBadge = "";
+                let actionBtn = "";
+                
+                if (c.isUsed) {
+                    statusBadge = `<span style="color: #e74c3c; font-size: 0.75rem; font-weight:bold;">KULLANILDI</span>`;
+                } else if (c.isActive === false) {
+                    statusBadge = `<span style="color: #95a5a6; font-size: 0.75rem; text-decoration: line-through;">PASİF</span>`;
+                } else {
+                    statusBadge = `<span style="color: #27ae60; font-size: 0.75rem; font-weight:bold;">AKTİF</span>`;
+                    actionBtn = `<button onclick="deactivateCode('${c.id}')" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:0.7rem; text-decoration:underline;">İptal Et</button>`;
+                }
+                
+                const duration = c.premiumDays > 0 ? `${c.premiumDays} Gün` : 'Sınırsız';
+                
+                list.innerHTML += `
+                <li class="code-item">
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <strong style="font-size: 1rem; color: var(--btn-bg);">${c.id}</strong>
+                        <span style="font-size:0.75rem; opacity:0.8;">🏢 ${c.company || 'Genel'}</span>
+                        <span style="font-size:0.7rem; opacity:0.6;">👥 ${c.maxStudents} Öğr. | ⏳ ${duration}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+                        ${statusBadge}
+                        ${actionBtn}
+                    </div>
+                </li>`;
+            });
+        }
+
+        // --- FEEDBACK (ÖNERİ) SİSTEMİ ---
+        window.loadFeedbacks = async function() {
+            const container = document.getElementById('feedbackList');
+            const data = await window.getFeedbacks();
+            
+            container.innerHTML = '';
+            if(data.length === 0) {
+                container.innerHTML = '<div style="text-align:center; opacity:0.5; padding: 2rem;">Henüz bir geri bildirim bulunmuyor.</div>';
+                return;
+            }
+
+            data.forEach(f => {
+                container.innerHTML += `
+                <div class="feedback-item">
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">
+                        <strong>👤 ${f.name}</strong>
+                        <span style="font-size:0.75rem; opacity:0.6;">📅 ${f.date}</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:#3498db; margin-bottom: 10px;">✉️ ${f.email}</div>
+                    <p style="font-size:0.95rem; line-height: 1.6; white-space: pre-wrap; background: var(--card-bg); padding: 10px; border-radius: 6px;">${f.message}</p>
+                    <div style="text-align: right; margin-top: 10px;">
+                        <button onclick="removeFeedback('${f.id}')" style="background:transparent; border:none; color:#e74c3c; font-weight:bold; cursor:pointer; font-size:0.8rem;">🗑️ Mesajı Sil</button>
+                    </div>
+                </div>`;
+            });
+        };
+
+        window.removeFeedback = async function(id) {
+            if(confirm("Bu mesajı silmek istediğinize emin misiniz?")) {
+                const ok = await window.deleteFeedback(id);
+                if(ok) window.loadFeedbacks();
+            }
+        };
+    </script>
+</body>
+</html>

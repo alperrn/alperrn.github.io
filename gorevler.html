@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Görevlerim Takvimi</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .task-list { list-style: none; width: 100%; text-align: left; }
+        .task-item { background: var(--bg-color); border: 1px solid var(--border-color); padding: 1rem; border-radius: 12px; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 1rem; transition: 0.3s; }
+        .task-item.completed { opacity: 0.6; }
+        .task-item.completed .task-text { text-decoration: line-through; }
+        .task-checkbox { width: 24px; height: 24px; cursor: pointer; accent-color: var(--btn-bg); }
+        .task-content { flex: 1; display: flex; flex-direction: column; }
+        .task-text { font-size: 1.05rem; font-weight: 600; }
+        .auth-gate-wrapper { position: relative; width: 100%; }
+        .auth-gate-content.blurred { filter: blur(8px); pointer-events: none; opacity: 0.5; user-select: none; }
+    </style>
+</head>
+<body>
+<div class="top-left-controls">
+        <a href="profil.html" class="profile-btn req-auth" id="profileBtnText">?</a>
+    </div>
+    
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="koc-paneli.html" class="teacher-only">Koç Paneli</a>
+            <a href="gorevler.html" class="student-only req-auth">Görevlerim</a>
+            <a href="tyt.html" class="student-only">TYT Sayacı</a>
+            <a href="ayt.html" class="student-only">AYT Sayacı</a>
+            <a href="kronometre.html" class="student-only">Kronometre</a>
+            <a href="pomodoro.html" class="student-only">Pomodoro</a>
+            <a href="sureler.html" class="student-only req-auth">Tutulan Süreler</a>
+            <a href="denemeler.html" class="student-only req-auth">Denemelerim</a>
+        </nav>
+    </div>
+
+    <div class="container" style="max-width: 650px;">
+        <h1>📅 Görev Takvimi</h1>
+        
+        <div class="auth-gate-wrapper">
+            <div id="authMessage" class="auth-message">
+                <h3>Kilitli Alan 🔒</h3>
+                <p style="font-size: 0.9rem; opacity: 0.8;">Koçunuzun atadığı görevleri görmek için giriş yapmalısınız.</p>
+                <button class="btn" style="width: 100%;" onclick="window.location.href='login.html'">Giriş Yap / Kayıt Ol</button>
+            </div>
+
+            <div id="gateContent" class="auth-gate-content blurred">
+                
+                <div id="linkCoachSection" style="display: none; background: var(--bg-color); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; margin-bottom: 2rem;">
+                    <h3>Sisteme Koçunu Ekle</h3>
+                    <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                        <input type="text" id="coachCode" placeholder="Koç Kodunu Yapıştır" style="flex: 3; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
+                        <button class="btn" onclick="connectToCoach()" style="flex: 1;">Bağlan</button>
+                    </div>
+                </div>
+
+                <div id="tasksSection" style="width: 100%;">
+                    
+                    <div class="calendar-container">
+                        <div class="cal-header">
+                            <button class="cal-nav-btn" onclick="changeMonth(-1)">❮</button>
+                            <span id="calMonthYear">Ağustos 2025</span>
+                            <button class="cal-nav-btn" onclick="changeMonth(1)">❯</button>
+                        </div>
+                        <div class="cal-grid">
+                            <div class="cal-day-name">Pzt</div><div class="cal-day-name">Sal</div><div class="cal-day-name">Çar</div>
+                            <div class="cal-day-name">Per</div><div class="cal-day-name">Cum</div><div class="cal-day-name">Cmt</div><div class="cal-day-name">Paz</div>
+                        </div>
+                        <div class="cal-grid" id="calGridDays">
+                            </div>
+                    </div>
+
+                    <h3 style="text-align: left; margin-bottom: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+                        Seçili Gün: <span id="selectedDateText" style="color: var(--btn-bg);">Bugün</span>
+                    </h3>
+                    
+                    <ul class="task-list" id="studentTaskList">
+                        <li style="text-align:center; opacity:0.6;">Gün seçin.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+    let allTasks = [];
+        
+            // Zaman dilimi (timezone) farkını yok edip garanti YYYY-MM-DD tarihi üreten fonksiyon
+            function getLocalISODate(dateObj) {
+                const tzOffset = dateObj.getTimezoneOffset() * 60000;
+                return (new Date(dateObj - tzOffset)).toISOString().slice(0, 10);
+            }
+
+            let currentDate = new Date();
+            let selectedDateStr = getLocalISODate(currentDate);
+
+        window.addEventListener('load', () => {
+             // ... burası aynı kalacak ...
+            setTimeout(async () => {
+                const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+                if (!isLoggedIn) {
+                    document.getElementById('gateContent').classList.add('blurred');
+                    document.getElementById('authMessage').classList.add('show');
+                } else {
+                    document.getElementById('gateContent').classList.remove('blurred');
+                    document.getElementById('authMessage').classList.remove('show');
+                    
+                    if(localStorage.getItem('userRole') === 'teacher') {
+                        alert("Öğretmenler görev alamaz, Koç Paneline yönlendiriliyorsunuz.");
+                        window.location.href = "koc-paneli.html"; return;
+                    }
+                    checkCoachStatus();
+                }
+            }, 1000);
+        });
+
+        async function checkCoachStatus() {
+            const userData = await window.getUserData();
+            if(userData && !userData.teacherId) {
+                document.getElementById('linkCoachSection').style.display = 'block';
+                document.getElementById('tasksSection').style.display = 'none';
+            } else if (userData && userData.teacherId) {
+                document.getElementById('linkCoachSection').style.display = 'none';
+                document.getElementById('tasksSection').style.display = 'block';
+                
+                // Görevleri Buluttan Çek ve Takvimi Çiz
+                allTasks = await window.getTasks();
+                renderCalendar();
+                renderTasksForSelectedDate();
+            }
+        }
+
+        window.connectToCoach = async function() {
+            const code = document.getElementById('coachCode').value.trim();
+            if(!code) return;
+            const success = await window.linkToTeacher(code);
+            if(success) { alert("Bağlantı kuruldu!"); checkCoachStatus(); } 
+            else alert("Hatalı kod!");
+        };
+
+        // --- TAKVİM MANTIĞI ---
+        window.changeMonth = function(dir) {
+            currentDate.setMonth(currentDate.getMonth() + dir);
+            selectedDateStr = getLocalISODate(currentDate); // Ay değiştiğinde tarihi sıfırla
+            renderCalendar();
+            renderTasksForSelectedDate();
+        };
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('calMonthYear').textContent = new Date(year, month).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const startDay = firstDay === 0 ? 6 : firstDay - 1; // Pzt(0) - Paz(6)
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const grid = document.getElementById('calGridDays');
+            grid.innerHTML = '';
+
+            for(let i=0; i<startDay; i++) { grid.innerHTML += `<div class="cal-day empty"></div>`; }
+
+            for(let i=1; i<=daysInMonth; i++) {
+                // YYYY-MM-DD Formatında string oluştur
+                const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                
+                const hasTask = allTasks.some(t => t.date === dStr);
+                const taskClass = hasTask ? 'has-task' : '';
+                const activeClass = dStr === selectedDateStr ? 'active' : '';
+
+                grid.innerHTML += `<div class="cal-day ${taskClass} ${activeClass}" onclick="selectDate('${dStr}')">${i}</div>`;
+            }
+        }
+
+        window.selectDate = function(dateStr) {
+            selectedDateStr = dateStr;
+            renderCalendar(); // Active classını güncellemek için
+            renderTasksForSelectedDate();
+        };
+
+        function renderTasksForSelectedDate() {
+            // Ekrana tarihi Türkçe güzel formatta yazdır (Örn: 15 Ağustos 2025)
+            const parts = selectedDateStr.split('-');
+            const trDate = new Date(parts[0], parts[1]-1, parts[2]).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('selectedDateText').textContent = trDate;
+
+            const list = document.getElementById('studentTaskList');
+            const todaysTasks = allTasks.filter(t => t.date === selectedDateStr);
+            
+            list.innerHTML = '';
+            if(todaysTasks.length === 0) {
+                list.innerHTML = '<li style="text-align:center; opacity:0.6;">Bu gün için atanmış bir görev yok. Serbest çalış!</li>';
+                return;
+            }
+
+            todaysTasks.forEach(t => {
+                const checkedStr = t.completed ? 'checked' : '';
+                const completedClass = t.completed ? 'completed' : '';
+                list.innerHTML += `
+                    <li class="task-item ${completedClass}">
+                        <input type="checkbox" class="task-checkbox" ${checkedStr} onchange="markTask('${t.id}', this.checked)">
+                        <div class="task-content">
+                            <span class="task-text">${t.description}</span>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        window.markTask = async function(taskId, isCompleted) {
+            await window.toggleTaskStatus(taskId, isCompleted);
+            // Listeyi yeniden çek ve güncelle
+            allTasks = await window.getTasks();
+            renderTasksForSelectedDate();
+        };
+    </script>
+</body>
+</html>

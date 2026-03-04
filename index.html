@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>YKS İstasyonu</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; width: 100%; text-align: left; margin-top: 1rem;}
+        @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .choice-card { background: var(--bg-color); border: 2px solid var(--border-color); padding: 1.5rem; border-radius: 12px; text-decoration: none; color: var(--text-color); font-weight: 600; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .choice-card:hover { border-color: var(--btn-bg); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .notification-area { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-height: 500px; overflow-y: auto; }
+        
+        /* Form elemanları için tasarım */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .form-group select, .form-group textarea { width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="top-left-controls"><a href="profil.html" class="profile-btn req-auth" id="profileBtnText">?</a></div>
+    
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html" style="background: var(--btn-bg); color: var(--btn-text);">Ana Sayfa</a>
+            <a href="login.html" id="authLink">Giriş Yap</a>
+            <a href="koc-paneli.html" class="teacher-only">Koç Paneli</a>
+            <a href="gorevler.html" class="student-only req-auth">Görevlerim</a>
+            <a href="tyt.html" class="student-only">TYT Sayacı</a>
+            <a href="ayt.html" class="student-only">AYT Sayacı</a>
+            <a href="kronometre.html" class="student-only">Kronometre</a>
+            <a href="pomodoro.html" class="student-only">Pomodoro</a>
+            <a href="sureler.html" class="student-only req-auth">Tutulan Süreler</a>
+            <a href="denemeler.html" class="student-only req-auth">Denemelerim</a>
+        </nav>
+    </div>
+
+    <div class="container" style="max-width: 1000px; width: 95%;">
+        <h1>Hoş Geldin, <span id="welcomeName" style="color: var(--btn-bg);">YKS Savaşçısı</span>! 🚀</h1>
+        
+        <div class="dashboard-grid">
+            
+            <div class="student-only">
+                <h3 style="margin-bottom: 1rem;">Hızlı Araçlar</h3>
+                <div class="choices">
+                    <a href="tyt.html" class="choice-card" style="border-bottom: 4px solid #3498db;">TYT Sayacı</a>
+                    <a href="ayt.html" class="choice-card" style="border-bottom: 4px solid #9b59b6;">AYT Sayacı</a>
+                    <a href="kronometre.html" class="choice-card" style="border-bottom: 4px solid #f39c12;">Kronometre</a>
+                    <a href="denemeler.html" class="choice-card req-auth" style="border-bottom: 4px solid #27ae60;">Denemelerim</a>
+                    <a href="gorevler.html" class="choice-card req-auth" style="grid-column: span 2; background: var(--btn-bg); color: var(--btn-text); border:none;">📋 Günlük Görevlerime Git</a>
+                </div>
+            </div>
+
+            <div class="teacher-only">
+                <h3 style="margin-bottom: 1rem;">Koçluk Yönetimi</h3>
+                <a href="koc-paneli.html" class="choice-card" style="background: var(--btn-bg); color: var(--btn-text); border:none; margin-bottom: 2rem;">👨‍🏫 Detaylı Koç Paneline Git</a>
+                
+                <h3 style="margin-bottom: 1rem;">Hızlı Mesaj & Duyuru Sistemi</h3>
+                <div style="background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div class="form-group">
+                        <label>Alıcı Seçin</label>
+                        <select id="notifTarget">
+                            <option value="all_students">Tüm Öğrencilerime Toplu Mesaj</option>
+                            </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mesajınız</label>
+                        <textarea id="coachNotifText" rows="3" placeholder="Örn: Gençler, yarın akşam deneme analizlerini kontrol edeceğim..."></textarea>
+                    </div>
+                    <button class="btn" style="width: 100%; background: #e67e22;" onclick="sendCoachNotification()">Duyuruyu Gönder</button>
+                </div>
+            </div>
+
+            <div class="notification-area">
+                <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 5px;">🔔 Bildirimler</h3>
+                <div id="notifList">
+                    <div class="notification-box">
+                        <span class="notification-date">Sistem</span>
+                        <span class="notification-text">Bildirimleriniz yükleniyor...</span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        let myStudentsList = []; // Hocanın öğrencilerini tutacağımız liste
+
+        window.loadCustomPageData = async function() {
+            const name = localStorage.getItem('userName');
+            if(name) document.getElementById('welcomeName').textContent = name.split(' ')[0]; // Sadece ilk isim
+            
+            // 1. Bildirimleri çek ve sağ tarafa yazdır
+            const notifs = await window.getNotifications();
+            const list = document.getElementById('notifList');
+            if(notifs.length > 0) {
+                list.innerHTML = '';
+                notifs.forEach(n => {
+                    list.innerHTML += `
+                        <div class="notification-box">
+                            <span class="notification-date">${n.date} - ${n.sender}</span>
+                            <span class="notification-text">${n.message}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = '<div style="opacity:0.6; text-align:center;">Henüz yeni bir bildiriminiz yok.</div>';
+            }
+
+            // 2. Eğer giren kişi Öğretmen ise öğrencilerini çekip açılır menüye (select) ekle
+            if(localStorage.getItem('userRole') === 'teacher') {
+                myStudentsList = await window.getMyStudents();
+                const select = document.getElementById('notifTarget');
+                
+                if(myStudentsList.length > 0) {
+                    myStudentsList.forEach(st => {
+                        select.innerHTML += `<option value="${st.id}">${st.name}</option>`;
+                    });
+                } else {
+                    select.innerHTML = `<option value="none">Henüz öğrenciniz yok</option>`;
+                }
+            }
+        };
+
+// Hocanın ana sayfadan mesaj atma fonksiyonu (OPTİMİZE EDİLDİ)
+        window.sendCoachNotification = async function() {
+            const target = document.getElementById('notifTarget').value;
+            const msg = document.getElementById('coachNotifText').value;
+            
+            if(target === "none") return alert("Mesaj atabileceğiniz bir öğrenciniz bulunmuyor.");
+            if(!msg) return alert("Boş mesaj gönderemezsiniz.");
+
+            const senderName = localStorage.getItem('userName') + " (Koç)";
+
+            // Eğer "Tüm Öğrencilerime" seçildiyse BATCH sistemini kullan (Kasma yapmaz)
+            if(target === "all_students") {
+                if(myStudentsList.length === 0) return alert("Hiç öğrenciniz yok.");
+                
+                // Öğrenci ID'lerini bir diziye (array) topla
+                const studentIds = myStudentsList.map(st => st.id);
+                
+                const success = await window.sendBulkNotification(studentIds, msg, senderName);
+                if(success) alert(`Harika! Mesajınız ${studentIds.length} öğrencinize anında iletildi.`);
+            
+            // Tek bir öğrenci seçildiyse normal bildirim at
+            } else {
+                await window.sendNotification(target, msg, senderName);
+                alert("Mesaj seçilen öğrenciye başarıyla iletildi!");
+            }
+            
+            document.getElementById('coachNotifText').value = ''; // Kutuyu temizle
+        };
+    </script>
+    <button class="btn req-auth" style="position: fixed; bottom: 20px; right: 20px; border-radius: 50px; padding: 12px 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 100; display: flex; align-items: center; gap: 8px; font-weight: bold;" onclick="openFeedbackModal()">
+        <span style="font-size: 1.2rem;">💡</span> İstek & Öneri
+    </button>
+
+    <div class="modal-overlay" id="feedbackModal">
+        <div class="modal-content">
+            <h2>💡 Fikrilerinizi Önemsiyoruz</h2>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1.5rem;">Sistemde görmek istediğiniz özellikleri veya karşılaştığınız sorunları bize yazın. Yönetim ekibimiz tüm mesajları okumaktadır.</p>
+            
+            <textarea id="feedbackText" rows="4" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-family: 'Poppins'; margin-bottom: 1rem;" placeholder="Mesajınız..."></textarea>
+            
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn" style="background: transparent; color: var(--text-color); border: 2px solid var(--border-color);" onclick="closeFeedbackModal()">İptal</button>
+                <button class="btn" style="background: #3498db;" onclick="sendFeedback()">Gönder</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.openFeedbackModal = function() { 
+            // Modal'ı göster
+            document.getElementById('feedbackModal').style.display = 'flex'; 
+        }
+        window.closeFeedbackModal = function() { 
+            document.getElementById('feedbackModal').style.display = 'none'; 
+        }
+        window.sendFeedback = async function() {
+            const msg = document.getElementById('feedbackText').value.trim();
+            if(!msg) return alert("Lütfen bir mesaj yazın.");
+            
+            const btn = event.target;
+            btn.textContent = "Gönderiliyor..."; btn.disabled = true;
+
+            const success = await window.submitFeedback(msg);
+            if(success) {
+                alert("Mesajınız başarıyla iletildi! Geri bildiriminiz için teşekkür ederiz.");
+                document.getElementById('feedbackText').value = '';
+                closeFeedbackModal();
+            } else { 
+                alert("Bir hata oluştu. Lütfen bağlantınızı kontrol edin."); 
+            }
+            btn.textContent = "Gönder"; btn.disabled = false;
+        }
+    </script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker başarıyla kaydedildi!'))
+                .catch(err => console.log('Service Worker hatası:', err));
+        });
+    }
+</script>
+    <div id="offline-toast" style="position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #e74c3c; color: white; padding: 10px 20px; border-radius: 20px; display: none; z-index: 1000; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+        ⚠️ Çevrimdışı Mod: Bazı özellikler kısıtlı olabilir.
+    </div>
+
+<script>
+    window.addEventListener('online', () => document.getElementById('offline-toast').style.display = 'none');
+    window.addEventListener('offline', () => document.getElementById('offline-toast').style.display = 'block');
+    if(!navigator.onLine) document.getElementById('offline-toast').style.display = 'block';
+</script>
+</body>
+</html>

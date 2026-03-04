@@ -1,0 +1,18 @@
+{
+  "name": "YKS İstasyonu: Sayaç ve Koçluk",
+  "short_name": "YKS İstasyonu",
+  "description": "Profesyonel YKS hazırlık sayaçları, kronometre ve rehber öğretmen takip sistemi.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#3498db",
+  "theme_color": "#3498db",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

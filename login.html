@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Giriş Yap / Kayıt Ol</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .form-group { text-align: left; width: 100%; margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .form-group input, .form-group select { 
+            width: 100%; padding: 0.8rem; border-radius: 8px; border: 2px solid var(--border-color);
+            background: var(--bg-color); color: var(--text-color); font-family: 'Poppins', sans-serif;
+        }
+        .tabs { display: flex; width: 100%; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); }
+        .tab { flex: 1; padding: 1rem; cursor: pointer; font-weight: 600; opacity: 0.5; transition: 0.3s; }
+        .tab.active { opacity: 1; border-bottom: 3px solid var(--btn-bg); color: var(--btn-bg); }
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+    </style>
+</head>
+<body>
+<div class="top-left-controls">
+        <a href="profil.html" class="profile-btn req-auth" id="profileBtnText">?</a>
+    </div>
+    
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="koc-paneli.html" class="teacher-only">Koç Paneli</a>
+            <a href="gorevler.html" class="student-only req-auth">Görevlerim</a>
+            <a href="tyt.html" class="student-only">TYT Sayacı</a>
+            <a href="ayt.html" class="student-only">AYT Sayacı</a>
+            <a href="kronometre.html" class="student-only">Kronometre</a>
+            <a href="pomodoro.html" class="student-only">Pomodoro</a>
+            <a href="sureler.html" class="student-only req-auth">Tutulan Süreler</a>
+            <a href="denemeler.html" class="student-only req-auth">Denemelerim</a>
+        </nav>
+    </div>
+
+    <div class="container" style="max-width: 450px;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('login')">Giriş Yap</div>
+            <div class="tab" onclick="switchTab('register')">Kayıt Ol</div>
+        </div>
+
+        <form id="loginSection" class="form-section active" style="width: 100%;">
+            <div class="form-group">
+                <label>E-posta Adresi</label>
+                <input type="email" id="loginEmail" required placeholder="ornek@mail.com">
+            </div>
+            <div class="form-group">
+                <label>Şifre</label>
+                <input type="password" id="loginPassword" required placeholder="••••••••">
+            </div>
+            <button type="button" class="btn" style="width: 100%;" onclick="hesabaGir()">Giriş Yap</button>
+        </form>
+
+        <form id="registerSection" class="form-section" style="width: 100%;">
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Adınız</label>
+                    <input type="text" id="regFirstName" required placeholder="Ali">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Soyadınız</label>
+                    <input type="text" id="regLastName" required placeholder="Yılmaz">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Hesap Türü</label>
+                <select id="regRole">
+                    <option value="student">Öğrenci</option>
+                    <option value="teacher">Rehber Öğretmen</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>E-posta Adresi</label>
+                <input type="email" id="regEmail" required placeholder="ornek@mail.com">
+            </div>
+            <div class="form-group">
+                <label>Şifre (En az 6 hane)</label>
+                <input type="password" id="regPassword1" required placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>Şifreyi Onayla</label>
+                <input type="password" id="regPassword2" required placeholder="••••••••">
+            </div>
+            <button type="button" class="btn" style="width: 100%; background-color: #27ae60;" onclick="kayitOl()">Hesap Oluştur</button>
+        </form>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            if(tab === 'login') { document.querySelectorAll('.tab')[0].classList.add('active'); document.getElementById('loginSection').classList.add('active'); } 
+            else { document.querySelectorAll('.tab')[1].classList.add('active'); document.getElementById('registerSection').classList.add('active'); }
+        }
+
+        function hesabaGir() {
+            const e = document.getElementById('loginEmail').value; const p = document.getElementById('loginPassword').value;
+            if(!e || !p) return alert("E-posta ve şifre giriniz!");
+            window.yksSignIn(window.yksAuth, e, p).then(() => {
+                setTimeout(() => { window.location.href = localStorage.getItem('userRole') === 'teacher' ? "koc-paneli.html" : "index.html"; }, 800);
+            }).catch(err => alert("Hata: Şifre yanlış veya hesap yok."));
+        }
+
+        function kayitOl() {
+            const fn = document.getElementById('regFirstName').value;
+            const ln = document.getElementById('regLastName').value;
+            const r = document.getElementById('regRole').value;
+            const e = document.getElementById('regEmail').value;
+            const p1 = document.getElementById('regPassword1').value;
+            const p2 = document.getElementById('regPassword2').value;
+            
+            if(!fn || !ln || !e || !p1) return alert("Tüm alanları doldurunuz!");
+            if(p1 !== p2) return alert("Şifreler birbiriyle eşleşmiyor!");
+
+            window.yksRegisterWithRole(e, p1, fn, ln, r).then(() => {
+                alert("Hesap başarıyla oluşturuldu!");
+                window.location.href = r === 'teacher' ? "koc-paneli.html" : "index.html";
+            }).catch(err => alert("Hata: " + err.message));
+        }
+    </script>
+</body>
+</html>

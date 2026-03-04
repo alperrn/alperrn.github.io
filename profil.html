@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Hesabım</title>
+    <link rel="stylesheet" href="style.css">
+    <style>.form-group { text-align: left; width: 100%; margin-bottom: 1rem; } .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; } .form-group input { width: 100%; padding: 0.8rem; border-radius: 8px; border: 2px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-family: 'Poppins'; }</style>
+</head>
+<body>
+<div class="top-left-controls">
+        <a href="profil.html" class="profile-btn req-auth" id="profileBtnText">?</a>
+    </div>
+    
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="koc-paneli.html" class="teacher-only">Koç Paneli</a>
+            <a href="gorevler.html" class="student-only req-auth">Görevlerim</a>
+            <a href="tyt.html" class="student-only">TYT Sayacı</a>
+            <a href="ayt.html" class="student-only">AYT Sayacı</a>
+            <a href="kronometre.html" class="student-only">Kronometre</a>
+            <a href="pomodoro.html" class="student-only">Pomodoro</a>
+            <a href="sureler.html" class="student-only req-auth">Tutulan Süreler</a>
+            <a href="denemeler.html" class="student-only req-auth">Denemelerim</a>
+        </nav>
+    </div>
+    <div class="container" style="max-width: 500px;">
+        <h1>👤 Hesabım</h1>
+        
+        <div style="width: 100%; text-align: left; background: var(--bg-color); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+            <p style="margin-bottom: 5px;"><strong>Rol:</strong> <span id="pRole" style="color: var(--btn-bg);">...</span></p>
+            <p><strong>E-posta:</strong> <span id="pEmail">...</span></p>
+        </div>
+
+        <div style="width: 100%; text-align: left; display: flex; flex-direction: column; gap: 1rem;">
+            <div class="form-group">
+                <label>İsim Değiştir (Ad Soyad)</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newName" style="flex: 3;" placeholder="Yeni İsminiz">
+                    <button class="btn" style="flex: 1; padding: 0;" onclick="updateName()">Güncelle</button>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Yeni Şifre</label>
+                <input type="password" id="newPass1" placeholder="Yeni Şifreniz">
+            </div>
+            <div class="form-group">
+                <label>Yeni Şifreyi Onayla</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="password" id="newPass2" style="flex: 3;" placeholder="Şifreyi tekrar girin">
+                    <button class="btn" style="flex: 1; padding: 0; background: #f39c12;" onclick="updatePass()">Değiştir</button>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn" style="width: 100%; margin-top: 2rem; background: #e74c3c;" onclick="window.yksLogout()">🚪 Hesaptan Çıkış Yap</button>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        window.loadCustomPageData = function() {
+            const r = localStorage.getItem('userRole');
+            document.getElementById('pRole').textContent = r === 'teacher' ? 'Rehber Öğretmen' : 'Öğrenci';
+            document.getElementById('pEmail').textContent = localStorage.getItem('userEmail');
+            document.getElementById('newName').value = localStorage.getItem('userName');
+        };
+
+        async function updateName() {
+            const nn = document.getElementById('newName').value;
+            if(!nn) return;
+            if(await window.yksUpdateProfile(nn)) { alert("Güncellendi!"); window.location.reload(); }
+        }
+
+        async function updatePass() {
+            const p1 = document.getElementById('newPass1').value; const p2 = document.getElementById('newPass2').value;
+            if(p1.length < 6) return alert("Şifre en az 6 haneli olmalı.");
+            if(p1 !== p2) return alert("Şifreler eşleşmiyor!");
+            try {
+                await window.yksUpdatePassword(p1); alert("Şifre değiştirildi.");
+                document.getElementById('newPass1').value = ''; document.getElementById('newPass2').value = '';
+            } catch(e) { alert("Güvenlik hatası. Yeniden giriş yapın."); }
+        }
+    </script>
+</body>
+</html>

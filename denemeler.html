@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Deneme Analizi</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .exam-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; text-align: left; }
+        .full-width { grid-column: span 2; }
+        .form-group label { display: block; font-size: 0.9rem; margin-bottom: 0.3rem; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.8rem; border-radius: 8px; border: 2px solid var(--border-color);
+            background: var(--bg-color); color: var(--text-color); font-family: 'Poppins', sans-serif;
+        }
+        .subject-row { display: flex; gap: 10px; align-items: center; background: var(--bg-color); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color); }
+        .subject-name { flex: 2; font-weight: 600; font-size: 0.9rem; }
+        .subject-input { flex: 1; }
+        .subject-input input { padding: 0.5rem; text-align: center; }
+        
+        .chart-container { width: 100%; max-width: 600px; height: 350px; margin: 2rem auto; background: var(--bg-color); padding: 1rem; border-radius: 12px; position: relative;}
+        
+        .exam-list { list-style: none; width: 100%; text-align: left; margin-top: 1rem; }
+        .exam-card { background: var(--bg-color); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .exam-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        .exam-stats { display: flex; justify-content: space-between; font-family: 'Roboto Mono', monospace; margin-top: 0.5rem; font-size: 1.1rem; }
+        .exam-note { font-size: 0.9rem; opacity: 0.8; font-style: italic; background: var(--card-bg); padding: 0.5rem; border-radius: 6px; }
+        .ranking-box { background: var(--btn-bg); color: var(--btn-text); padding: 0.5rem; border-radius: 8px; font-size: 0.85rem; text-align: center; margin-top: 0.5rem;}
+        
+        .auth-gate-wrapper { position: relative; width: 100%; }
+        .auth-gate-content.blurred { filter: blur(8px); pointer-events: none; opacity: 0.5; user-select: none; }
+        
+        @media (max-width: 600px) { .exam-form { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+    </style>
+</head>
+<body>
+<div class="top-left-controls">
+        <a href="profil.html" class="profile-btn req-auth" id="profileBtnText">?</a>
+    </div>
+    
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="koc-paneli.html" class="teacher-only">Koç Paneli</a>
+            <a href="gorevler.html" class="student-only req-auth">Görevlerim</a>
+            <a href="tyt.html" class="student-only">TYT Sayacı</a>
+            <a href="ayt.html" class="student-only">AYT Sayacı</a>
+            <a href="kronometre.html" class="student-only">Kronometre</a>
+            <a href="pomodoro.html" class="student-only">Pomodoro</a>
+            <a href="sureler.html" class="student-only req-auth">Tutulan Süreler</a>
+            <a href="denemeler.html" class="student-only req-auth">Denemelerim</a>
+        </nav>
+    </div>
+
+    <div class="container" style="max-width: 800px;">
+        <h1>Deneme Analizi</h1>
+        
+        <div class="auth-gate-wrapper">
+            <div id="authMessage" class="auth-message">
+                <h3>Kilitli Alan 🔒</h3>
+                <p style="font-size: 0.9rem; opacity: 0.8;">Deneme verilerini buluta kaydetmek ve analizleri görmek için hesabına giriş yapmalısın.</p>
+                <button class="btn" style="width: 100%;" onclick="window.location.href='login.html'">Giriş Yap / Kayıt Ol</button>
+            </div>
+
+            <div id="gateContent" class="auth-gate-content blurred">
+                
+                <div style="background: var(--bg-color); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); width: 100%;">
+                    <h3 id="formTitle" style="margin-bottom: 1rem; text-align: left;">Yeni Deneme Ekle</h3>
+                    <div class="exam-form">
+                        <div class="form-group">
+                            <label>Deneme Adı / Yayın</label>
+                            <input type="text" id="exName" placeholder="Örn: 3D Türkiye Geneli" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tarih</label>
+                            <input type="date" id="exDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sınav Türü</label>
+                            <select id="exType" onchange="renderSubjects()">
+                                <option value="TYT">TYT</option>
+                                <option value="AYT">AYT</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="alanGroup" style="display: none;">
+                            <label>Alanınız (Sadece AYT)</label>
+                            <select id="exAlan" onchange="renderSubjects()">
+                                <option value="SAY">Sayısal</option>
+                                <option value="EA">Eşit Ağırlık</option>
+                                <option value="SOZ">Sözel</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="tytSelectGroup" style="display: none; grid-column: span 2;">
+                            <label>Puan Hesaplaması İçin TYT Denemesi Seç (İsteğe Bağlı)</label>
+                            <select id="exTytRef">
+                                <option value="none">Sadece AYT Netimi Kaydet</option>
+                            </select>
+                        </div>
+
+                        <div id="subjectsContainer" class="full-width" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                            </div>
+                        
+                        <div class="form-group full-width">
+                            <label>Kendime Notlar</label>
+                            <textarea id="exNote" rows="2" placeholder="Fende zaman yetmedi..."></textarea>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <button class="btn" id="submitBtn" style="width: 100%; background-color: #27ae60;" onclick="saveExam()">Dersleri Hesapla ve Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filters" style="margin-top: 2rem; display: flex; gap: 10px; justify-content: center;">
+                    <button class="pomo-btn active" id="btnGraphTYT" onclick="updateChart('TYT')">TYT Gelişimim</button>
+                    <button class="pomo-btn" id="btnGraphAYT" onclick="updateChart('AYT')">AYT Gelişimim</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="netChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 1rem;">
+                    <h3 style="text-align: left;">Geçmiş Denemeler</h3>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="pomo-btn active" id="filterAll" onclick="filterList('All')" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Tümü</button>
+                        <button class="pomo-btn" id="filterTYT" onclick="filterList('TYT')" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">TYT</button>
+                        <button class="pomo-btn" id="filterAYT" onclick="filterList('AYT')" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">AYT</button>
+                    </div>
+                </div>
+                
+                <ul class="exam-list" id="examList">
+                    <li style="text-align:center; opacity:0.6;">Yükleniyor...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        let myChart = null;
+        let allExams = [];
+        let currentFilter = 'All';
+        let editModeId = null; // Düzenleme Modu Kontrolü
+
+        const subjectLists = {
+            TYT: [
+                { id: 'tr', name: 'Türkçe', max: 40 }, { id: 'sos', name: 'Sosyal', max: 20 }, 
+                { id: 'mat', name: 'Matematik', max: 40 }, { id: 'fen', name: 'Fen', max: 20 }
+            ],
+            AYT_SAY: [
+                { id: 'mat2', name: 'Matematik', max: 40 }, { id: 'fiz', name: 'Fizik', max: 14 }, 
+                { id: 'kim', name: 'Kimya', max: 13 }, { id: 'biyo', name: 'Biyoloji', max: 13 }
+            ],
+            AYT_EA: [
+                { id: 'mat2', name: 'Matematik', max: 40 }, { id: 'edb', name: 'Edebiyat', max: 24 }, 
+                { id: 'tar1', name: 'Tarih-1', max: 10 }, { id: 'cog1', name: 'Coğrafya-1', max: 6 }
+            ],
+            AYT_SOZ: [
+                { id: 'edb', name: 'Edebiyat', max: 24 }, { id: 'tar1', name: 'Tarih-1', max: 10 }, 
+                { id: 'cog1', name: 'Coğrafya-1', max: 6 }, { id: 'tar2', name: 'Tarih-2', max: 11 }, 
+                { id: 'cog2', name: 'Coğrafya-2', max: 11 }, { id: 'fel', name: 'Felsefe Grubu', max: 12 }, { id: 'din', name: 'Din K.', max: 6 }
+            ]
+        };
+
+        let currentSubjects = [];
+        document.getElementById('exDate').valueAsDate = new Date();
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+                if (!isLoggedIn) {
+                    document.getElementById('gateContent').classList.add('blurred');
+                    document.getElementById('authMessage').classList.add('show');
+                } else {
+                    document.getElementById('gateContent').classList.remove('blurred');
+                    document.getElementById('authMessage').classList.remove('show');
+                    renderSubjects();
+                    if(window.loadExams) window.loadExams();
+                }
+            }, 800);
+        });
+
+        window.renderSubjects = function() {
+            const type = document.getElementById('exType').value;
+            const alanGroup = document.getElementById('alanGroup');
+            const tytGroup = document.getElementById('tytSelectGroup');
+            const container = document.getElementById('subjectsContainer');
+            
+            let listToRender = [];
+
+            if(type === 'TYT') {
+                alanGroup.style.display = 'none'; tytGroup.style.display = 'none';
+                listToRender = subjectLists.TYT;
+            } else {
+                alanGroup.style.display = 'block'; tytGroup.style.display = 'block';
+                const alan = document.getElementById('exAlan').value;
+                listToRender = subjectLists['AYT_' + alan];
+                fillTytOptions();
+            }
+
+            currentSubjects = listToRender;
+            container.innerHTML = `<div style="display:flex; gap:10px; margin-bottom: 5px; opacity: 0.8; font-size: 0.85rem; font-weight: bold;">
+                <div style="flex:2;">Ders Adı</div><div style="flex:1; text-align:center;">Doğru</div><div style="flex:1; text-align:center;">Yanlış</div>
+            </div>`;
+
+            listToRender.forEach(sub => {
+                container.innerHTML += `
+                    <div class="subject-row">
+                        <div class="subject-name">${sub.name} (Max ${sub.max})</div>
+                        <div class="subject-input"><input type="number" id="d_${sub.id}" placeholder="0" min="0" max="${sub.max}"></div>
+                        <div class="subject-input"><input type="number" id="y_${sub.id}" placeholder="0" min="0" max="${sub.max}"></div>
+                    </div>
+                `;
+            });
+        };
+
+        function fillTytOptions() {
+            const select = document.getElementById('exTytRef');
+            select.innerHTML = '<option value="none">Sadece AYT Netimi Kaydet</option>';
+            const tytExams = allExams.filter(e => e.type === 'TYT');
+            tytExams.forEach(ex => { select.innerHTML += `<option value="${ex.net}">${ex.name} (${ex.net.toFixed(2)} Net)</option>`; });
+        }
+
+        // KAYDET VEYA GÜNCELLE
+        window.saveExam = async function() {
+            const name = document.getElementById('exName').value;
+            const date = document.getElementById('exDate').value;
+            const type = document.getElementById('exType').value;
+            const alan = type === 'AYT' ? document.getElementById('exAlan').value : null;
+            const note = document.getElementById('exNote').value;
+            
+            if(!name || !date) return alert("Lütfen deneme adı ve tarih giriniz!");
+
+            let totalDogru = 0; let totalYanlis = 0; let totalNet = 0;
+            let subjectDetails = {}; let hasError = false;
+
+            currentSubjects.forEach(sub => {
+                const d = parseFloat(document.getElementById(`d_${sub.id}`).value) || 0;
+                const y = parseFloat(document.getElementById(`y_${sub.id}`).value) || 0;
+                const net = d - (y / 4);
+                
+                if(net > sub.max || d > sub.max) {
+                    alert(`HATA: ${sub.name} dersindeki Netiniz veya Doğru sayınız, soru sayısını (${sub.max}) geçemez!`);
+                    hasError = true;
+                }
+                
+                totalDogru += d; totalYanlis += y; totalNet += net;
+                subjectDetails[sub.name] = { d, y, net };
+            });
+
+            if(hasError) return; 
+
+            let rankText = ""; let tytRefNet = 0;
+
+            if(type === 'TYT') {
+                let puan = 100 + (totalNet * 3.3); rankText = calculateRank(puan);
+            } else if (type === 'AYT') {
+                const tytSelect = document.getElementById('exTytRef').value;
+                if(tytSelect !== "none") {
+                    tytRefNet = parseFloat(tytSelect);
+                    let aytPuan = 100 + (tytRefNet * 1.32) + (totalNet * 3); 
+                    rankText = calculateRank(aytPuan);
+                } else { rankText = "TYT girilmediği için sıralama hesaplanamadı."; }
+            }
+
+            const examData = {
+                name: name, type: type, alan: alan, date: date, 
+                dogru: totalDogru, yanlis: totalYanlis, net: totalNet,
+                details: subjectDetails, note: note, ranking: rankText
+            };
+
+            // DÜZENLEME MODU KONTROLÜ
+            if(editModeId) {
+                await window.updateCloudExam(editModeId, examData);
+                alert("Deneme başarıyla güncellendi!");
+                editModeId = null;
+                document.getElementById('formTitle').textContent = "Yeni Deneme Ekle";
+                document.getElementById('submitBtn').textContent = "Dersleri Hesapla ve Kaydet";
+                document.getElementById('submitBtn').style.backgroundColor = "#27ae60";
+            } else {
+                await window.saveExamToCloud(examData);
+                alert(`Tebrikler! Toplam Netin: ${totalNet.toFixed(2)}\nBuluta başarıyla kaydedildi.`);
+            }
+            
+            document.getElementById('exName').value = ''; document.getElementById('exNote').value = '';
+            renderSubjects(); loadExams(); 
+        };
+
+        function calculateRank(puan) {
+            if(puan < 150) return "Baraj altı / Hesaplanamadı";
+            let rank2025 = Math.floor((500 - puan) * (500 - puan) * 1.5);
+            let rank2024 = Math.floor((500 - puan) * (500 - puan) * 1.8); 
+            if(rank2025 < 1) rank2025 = "İlk 100"; if(rank2024 < 1) rank2024 = "İlk 100";
+            return `🇹🇷 Tahmini Sıralama -> 2025: ${rank2025.toLocaleString('tr-TR')} | 2024: ${rank2024.toLocaleString('tr-TR')}`;
+        }
+
+        window.loadExams = async function() {
+            if(window.getCloudExams) { allExams = await window.getCloudExams(); }
+            renderExamList();
+            updateChart('TYT'); 
+            fillTytOptions(); 
+        };
+
+        // YENİ: Liste Filtreleme ve Çizme
+        window.filterList = function(type) {
+            currentFilter = type;
+            document.getElementById('filterAll').classList.remove('active');
+            document.getElementById('filterTYT').classList.remove('active');
+            document.getElementById('filterAYT').classList.remove('active');
+            document.getElementById('filter' + type).classList.add('active');
+            renderExamList();
+        }
+
+        window.renderExamList = function() {
+            const list = document.getElementById('examList');
+            list.innerHTML = '';
+            
+            let filtered = allExams;
+            if(currentFilter !== 'All') filtered = allExams.filter(e => e.type === currentFilter);
+
+            if(filtered.length === 0) {
+                list.innerHTML = '<li style="text-align:center; opacity:0.6;">Bu filtreye uygun deneme bulunamadı.</li>';
+                return;
+            }
+
+            filtered.forEach(ex => {
+                let tagColor = ex.type === 'TYT' ? '#3498db' : '#9b59b6';
+                let alanTag = ex.alan ? ` - ${ex.alan}` : '';
+                
+                let detailsHTML = `<div style="font-size: 0.85rem; margin-top: 10px; background: var(--bg-color); padding: 10px; border-radius: 8px; border: 1px dashed var(--border-color);">`;
+                for (const [subjName, stats] of Object.entries(ex.details)) {
+                    if(stats.d > 0 || stats.y > 0) {
+                        detailsHTML += `<div style="display:flex; justify-content:space-between;"><span>${subjName}:</span> <strong>${stats.d}D ${stats.y}Y (${stats.net.toFixed(2)} Net)</strong></div>`;
+                    }
+                }
+                detailsHTML += `</div>`;
+
+                // Karta Sil ve Düzenle Butonları Eklendi
+                list.innerHTML += `
+                    <div class="exam-card">
+                        <div class="exam-header">
+                            <strong style="font-size: 1.1rem;">${ex.name}</strong>
+                            <span style="font-size: 0.85rem; opacity: 0.8;">${ex.date}</span>
+                        </div>
+                        <div class="exam-stats">
+                            <span style="color: ${tagColor}; font-weight: bold;">[${ex.type}${alanTag}]</span>
+                            <span style="color: #27ae60;">${ex.dogru} D</span>
+                            <span style="color: #e74c3c;">${ex.yanlis} Y</span>
+                            <strong style="color: var(--text-color);">Toplam Net: ${ex.net.toFixed(2)}</strong>
+                        </div>
+                        ${detailsHTML}
+                        <div class="ranking-box">${ex.ranking}</div>
+                        ${ex.note ? `<div class="exam-note">" ${ex.note} "</div>` : ''}
+                        
+                        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                            <button class="btn" style="background: #f39c12; padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="editExam('${ex.id}')">Düzenle</button>
+                            <button class="btn" style="background: #e74c3c; padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="deleteExam('${ex.id}')">Sil</button>
+                        </div>
+                    </div>
+                `;
+            });
+        };
+
+        // YENİ: Düzenleme Fonksiyonu
+        window.editExam = function(id) {
+            const ex = allExams.find(e => e.id === id);
+            if(!ex) return;
+
+            document.getElementById('exName').value = ex.name;
+            document.getElementById('exDate').value = ex.date;
+            document.getElementById('exType').value = ex.type;
+            if(ex.type === 'AYT' && ex.alan) { document.getElementById('exAlan').value = ex.alan; }
+            
+            renderSubjects(); // Inputları oluştur
+
+            // Kayıtlı ders verilerini inputlara doldur
+            currentSubjects.forEach(sub => {
+                if(ex.details[sub.name]) {
+                    document.getElementById(`d_${sub.id}`).value = ex.details[sub.name].d;
+                    document.getElementById(`y_${sub.id}`).value = ex.details[sub.name].y;
+                }
+            });
+
+            document.getElementById('exNote').value = ex.note;
+            
+            editModeId = id; // Sistemi güncelleme moduna al
+            document.getElementById('formTitle').textContent = "Denemeyi Düzenle";
+            document.getElementById('submitBtn').textContent = "Güncelle ve Kaydet";
+            document.getElementById('submitBtn').style.backgroundColor = "#f39c12";
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // En üste kaydır
+        };
+
+        // YENİ: Silme Fonksiyonu
+        window.deleteExam = async function(id) {
+            if(confirm("Bu denemeyi silmek istediğine emin misin? (Geri alınamaz!)")) {
+                await window.deleteCloudExam(id);
+                loadExams(); // Listeyi yenile
+            }
+        };
+
+        window.updateChart = function(type) {
+            document.getElementById('btnGraphTYT').classList.remove('active');
+            document.getElementById('btnGraphAYT').classList.remove('active');
+            document.getElementById('btnGraph' + type).classList.add('active');
+
+            const filteredExams = allExams.filter(e => e.type === type).reverse();
+            const labels = filteredExams.map(e => e.date.substring(5));
+            const dataPoints = filteredExams.map(e => parseFloat(e.net.toFixed(2)));
+
+            const ctx = document.getElementById('netChart').getContext('2d');
+            if(myChart) myChart.destroy(); 
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: type + ' Net İlerlemesi', data: dataPoints,
+                        borderColor: type === 'TYT' ? '#3498db' : '#9b59b6',
+                        backgroundColor: type === 'TYT' ? 'rgba(52, 152, 219, 0.2)' : 'rgba(155, 89, 182, 0.2)',
+                        borderWidth: 3, tension: 0.3, fill: true
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: type === 'TYT' ? 120 : 80 } },
+                    plugins: { legend: { labels: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#000' } } }
+                }
+            });
+        };
+    </script>
+</body>
+</html>

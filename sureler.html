@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Tutulan Süreler ve Rapor</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .record-list { list-style: none; width: 100%; max-height: 250px; overflow-y: auto; padding-right: 10px; margin-bottom: 1.5rem;}
+        .record-list li {
+            background-color: var(--bg-color); padding: 1rem; margin-bottom: 0.8rem;
+            border-radius: 8px; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid var(--border-color); font-family: 'Poppins', sans-serif; font-size: 0.95rem;
+        }
+        .tag { font-size: 0.8rem; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; color: white;}
+        .tag.tyt { background-color: #3498db; }
+        .tag.ayt { background-color: #9b59b6; }
+        .tag.serbest { background-color: #e67e22; }
+    </style>
+</head>
+<body>
+<div class="top-left-controls">
+        <a href="profil.html" class="profile-btn req-auth" id="profileBtnText">?</a>
+    </div>
+    
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="koc-paneli.html" class="teacher-only">Koç Paneli</a>
+            <a href="gorevler.html" class="student-only req-auth">Görevlerim</a>
+            <a href="tyt.html" class="student-only">TYT Sayacı</a>
+            <a href="ayt.html" class="student-only">AYT Sayacı</a>
+            <a href="kronometre.html" class="student-only">Kronometre</a>
+            <a href="pomodoro.html" class="student-only">Pomodoro</a>
+            <a href="sureler.html" class="student-only req-auth">Tutulan Süreler</a>
+            <a href="denemeler.html" class="student-only req-auth">Denemelerim</a>
+        </nav>
+    </div>
+    <div class="container" style="max-width: 700px;">
+        <h1>Çalışma Geçmişim</h1>
+        
+        <div class="filters">
+            <label><input type="checkbox" id="chkTYT" checked onchange="window.loadRecords()"> TYT Denemeleri</label>
+            <label><input type="checkbox" id="chkAYT" checked onchange="window.loadRecords()"> AYT Denemeleri</label>
+            <label><input type="checkbox" id="chkSerbest" checked onchange="window.loadRecords()"> Serbest Çalışma</label>
+        </div>
+        
+        <div id="reportArea" style="width: 100%; padding: 10px;">
+            <h3 style="display:none; text-align:center; margin-bottom: 20px; color: black;" id="pdfTitle">Haftalık YKS Çalışma Raporu</h3>
+            <ul class="record-list" id="recordList">
+                <li style="justify-content:center; opacity:0.6;">Veriler Yükleniyor...</li>
+            </ul>
+        </div>
+        
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn" style="background-color: #27ae60;" onclick="generatePDF()">Haftalık Çalışma Raporum (PDF)</button>
+            <button class="btn" style="background-color: #e74c3c;" onclick="clearRecords()">Tümünü Sil</button>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        window.loadRecords = async function() {
+            const list = document.getElementById('recordList');
+            let allRecords = [];
+            
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+            if(isLoggedIn) {
+                // Buluttan verileri çek
+                allRecords = await window.getCloudRecords();
+            } else {
+                // Yerel cihazdan çek
+                allRecords = JSON.parse(localStorage.getItem('yksRecords')) || [];
+                allRecords.reverse(); // Yereli ters çevir ki yeni en üstte olsun
+            }
+            
+            // Filtreleri kontrol et
+            const showTYT = document.getElementById('chkTYT').checked;
+            const showAYT = document.getElementById('chkAYT').checked;
+            const showSerbest = document.getElementById('chkSerbest').checked;
+
+            list.innerHTML = '';
+
+            const filteredRecords = allRecords.filter(r => {
+                if(r.type === 'TYT' && showTYT) return true;
+                if(r.type === 'AYT' && showAYT) return true;
+                if(r.type === 'Serbest' && showSerbest) return true;
+                return false;
+            });
+
+            if(filteredRecords.length === 0) {
+                list.innerHTML = '<li style="justify-content:center; opacity:0.6;" class="empty-msg">Seçilen kriterlere uygun kayıt yok.</li>';
+                return;
+            }
+
+            filteredRecords.forEach(r => {
+                let tagClass = r.type === 'TYT' ? 'tyt' : (r.type === 'AYT' ? 'ayt' : 'serbest');
+                list.innerHTML += `
+                    <li class="record-item">
+                        <div>
+                            <span class="tag ${tagClass}">${r.type}</span>
+                            <span style="margin-left: 10px; font-size: 0.9rem; opacity: 0.8;">${r.date}</span>
+                        </div>
+                        <strong style="font-family: 'Roboto Mono', monospace;">${r.duration}</strong>
+                    </li>`;
+            });
+        };
+
+        window.clearRecords = async function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if(confirm("Tüm çalışma geçmişin silinecek, emin misin?")) {
+                if(isLoggedIn) {
+                    await window.clearCloudRecords(); // Buluttan sil
+                } else {
+                    localStorage.removeItem('yksRecords'); // Yerelden sil
+                }
+                window.loadRecords();
+            }
+        };
+
+        function generatePDF() {
+            const recordItems = document.querySelectorAll('.record-item');
+            if (recordItems.length === 0) {
+                alert("Raporlanacak veri bulunamadı! Lütfen önce süre tutun.");
+                return; 
+            }
+
+            const element = document.getElementById('reportArea');
+            document.getElementById('pdfTitle').style.display = 'block';
+            
+            const opt = {
+                margin:       1,
+                filename:     'YKS_Calisma_Raporum.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.getElementById('pdfTitle').style.display = 'none';
+            });
+        }
+        
+        // Misafir kullanıcılar için anında yükle (Giriş yapanlar app.js tetiklemesi ile yüklenir)
+        setTimeout(() => { if(localStorage.getItem('isLoggedIn') !== 'true') window.loadRecords(); }, 800);
+    </script>
+</body>
+</html>

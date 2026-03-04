@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rehber Öğretmen Paneli</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .panel-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; width: 100%; text-align: left; }
+        .card { background: var(--bg-color); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; }
+        .code-box { background: var(--card-bg); padding: 1rem; border-radius: 8px; font-family: 'Roboto Mono', monospace; font-size: 1.1rem; text-align: center; border: 2px dashed var(--btn-bg); margin: 1rem 0; font-weight: bold; letter-spacing: 1px;}
+        .student-list { list-style: none; margin-top: 1rem; }
+        .student-list li { background: var(--card-bg); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .student-list li:hover { border-color: var(--btn-bg); }
+        .student-list li.active { background: var(--btn-bg); color: var(--btn-text); }
+        
+        .task-list { list-style: none; margin-top: 1rem; max-height: 250px; overflow-y: auto;}
+        .task-list li { background: var(--card-bg); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;}
+        .task-badge { font-size: 0.75rem; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; color: white; }
+        .bg-green { background-color: #27ae60; }
+        .bg-red { background-color: #e74c3c; }
+        
+        @media (max-width: 768px) { .panel-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="top-left-controls"><a href="profil.html" class="profile-btn req-auth" id="profileBtnText">?</a></div>
+
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="login.html" id="authLink">Giriş Yap</a>
+            <a href="koc-paneli.html" class="teacher-only" style="background: var(--btn-bg); color: var(--btn-text);">Koç Paneli</a>
+            <a href="gorevler.html" class="student-only req-auth">Görevlerim</a>
+            <a href="tyt.html" class="student-only">TYT Sayacı</a>
+            <a href="ayt.html" class="student-only">AYT Sayacı</a>
+            <a href="kronometre.html" class="student-only">Kronometre</a>
+            <a href="pomodoro.html" class="student-only">Pomodoro</a>
+            <a href="sureler.html" class="student-only req-auth">Tutulan Süreler</a>
+            <a href="denemeler.html" class="student-only req-auth">Denemelerim</a>
+        </nav>
+    </div>
+
+    <div class="container" style="max-width: 1000px; width: 95%;">
+        
+        <div id="premiumBanner" class="premium-banner" style="display: none;">
+            <h3>👑 Sınırları Kaldır, Premium'a Geç!</h3>
+            <p style="font-size: 0.9rem;">Şu an sadece 2 öğrenciye kadar ücretsiz hizmet verebilirsiniz. Sınırsız öğrenci eklemek ve profesyonel koçluk araçlarına ulaşmak için Premium pakete geçin.</p>
+            <p style="font-size: 0.9rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 8px;">
+                📞 Satın Almak ve Bilgi İçin İletişim: <strong>0535 367 05 38</strong>
+            </p>
+            <div class="premium-input-group">
+                <input type="text" id="premCodeInput" placeholder="PREMIUM KODUNUZU GİRİN">
+                <button onclick="activatePremium()">Kodu Aktifleştir</button>
+            </div>
+        </div>
+
+        <h1>👨‍🏫 Rehber Öğretmen Paneli</h1>
+        
+        <div class="panel-grid">
+            <div class="card">
+                <h3>Davet Kodun</h3>
+                <p style="font-size: 0.8rem; opacity: 0.8;">Öğrencilerin bu kodu "Görevlerim" sekmesine girerek sana bağlanabilir.</p>
+                <div class="code-box" id="inviteCode">Yükleniyor...</div>
+                
+                <h3 style="margin-top: 2rem;">Öğrencilerim</h3>
+                <ul class="student-list" id="studentList">
+                    <li style="justify-content:center; opacity:0.6;">Öğrenci aranıyor...</li>
+                </ul>
+            </div>
+
+            <div class="card" id="actionPanel" style="opacity: 0.4; pointer-events: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <h3 id="selectedStudentName">Lütfen Öğrenci Seçin</h3>
+                </div>
+                
+                <div class="calendar-container">
+                    <div class="cal-header">
+                        <button class="cal-nav-btn" onclick="changeMonth(-1)">❮</button>
+                        <span id="calMonthYear">Ağustos 2025</span>
+                        <button class="cal-nav-btn" onclick="changeMonth(1)">❯</button>
+                    </div>
+                    <div class="cal-grid">
+                        <div class="cal-day-name">Pzt</div><div class="cal-day-name">Sal</div><div class="cal-day-name">Çar</div>
+                        <div class="cal-day-name">Per</div><div class="cal-day-name">Cum</div><div class="cal-day-name">Cmt</div><div class="cal-day-name">Paz</div>
+                    </div>
+                    <div class="cal-grid" id="calGridDays">
+                        </div>
+                </div>
+
+                <h4 style="margin-top: 1rem;">Seçili Gün: <span id="selectedDateText" style="color: var(--btn-bg);">Bugün</span></h4>
+                
+                <div style="display: flex; gap: 10px; margin-top: 0.5rem;">
+                    <input type="text" id="taskDesc" placeholder="Örn: 2 TYT Türkçe Denemesi Çözülecek" style="flex: 3; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-family: 'Poppins';">
+                    <button class="btn" onclick="assignTask()" style="flex: 1;">+ Görev Ekle</button>
+                </div>
+
+                <ul class="task-list" id="taskList">
+                    <li style="justify-content:center; opacity:0.6;">Bu güne ait görev yok.</li>
+                </ul>
+                
+                <button class="btn" style="width: 100%; margin-top: 1rem; background: #9b59b6;" onclick="goToDetails()">📊 Öğrencinin Detaylı Analizini Gör</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        let currentStudentId = null;
+        let allTasks = [];
+        
+        function getLocalISODate(dateObj) {
+            const tzOffset = dateObj.getTimezoneOffset() * 60000;
+            return (new Date(dateObj - tzOffset)).toISOString().slice(0, 10);
+        }
+
+        let currentDate = new Date();
+        let selectedDateStr = getLocalISODate(currentDate); 
+
+        window.addEventListener('load', () => {
+            setTimeout(async () => {
+                const role = localStorage.getItem('userRole');
+                const isPremium = localStorage.getItem('isPremium') === 'true';
+                
+                if (role !== 'teacher') {
+                    alert("Bu sayfaya sadece Rehber Öğretmenler erişebilir!");
+                    window.location.href = "index.html"; return;
+                }
+                
+                // PREMIUM KONTROLÜ
+                if(!isPremium) {
+                    document.getElementById('premiumBanner').style.display = 'flex';
+                }
+
+                document.getElementById('inviteCode').textContent = window.yksAuth.currentUser.uid;
+                loadStudents(); renderCalendar(); 
+            }, 1000);
+        });
+
+        // KODU AKTİFLEŞTİRME FONKSİYONU
+        window.activatePremium = async function() {
+            const code = document.getElementById('premCodeInput').value.trim();
+            if(!code) return alert("Lütfen kodunuzu girin.");
+            
+            const success = await window.redeemPremiumCode(code);
+            if(success) {
+                alert("🎉 TEBRİKLER! Hesabınız Premium Koç olarak güncellendi. Sınırlar kaldırıldı!");
+                document.getElementById('premiumBanner').style.display = 'none';
+            } else {
+                alert("❌ Hatalı veya daha önce kullanılmış bir kod girdiniz.");
+            }
+        }
+
+        async function loadStudents() {
+            const list = document.getElementById('studentList');
+            const students = await window.getMyStudents();
+            list.innerHTML = '';
+            if(students.length === 0) {
+                list.innerHTML = '<li style="justify-content:center; opacity:0.6;">Henüz sana bağlı öğrenci yok.</li>'; return;
+            }
+            students.forEach(st => {
+                list.innerHTML += `<li id="st_${st.id}" onclick="selectStudent('${st.id}', '${st.name}')">
+                    <strong>👤 ${st.name}</strong>
+                    <span style="font-size:0.8rem; opacity:0.8;">Seç ></span>
+                </li>`;
+            });
+        }
+
+        window.selectStudent = async function(id, name) {
+            currentStudentId = id;
+            document.querySelectorAll('.student-list li').forEach(li => li.classList.remove('active'));
+            document.getElementById(`st_${id}`).classList.add('active');
+            
+            document.getElementById('actionPanel').style.opacity = "1";
+            document.getElementById('actionPanel').style.pointerEvents = "auto";
+            document.getElementById('selectedStudentName').innerHTML = `🎓 <span style="color:var(--btn-bg)">${name}</span>`;
+            
+            allTasks = await window.getTasks(currentStudentId);
+            renderCalendar();
+            renderTasksForSelectedDate();
+        }
+
+        window.goToDetails = function() {
+            if(!currentStudentId) return alert("Önce bir öğrenci seçmelisiniz.");
+            const stName = document.querySelector('.student-list li.active strong').innerText.replace('👤 ', '');
+            window.location.href = `ogrenci-detay.html?id=${currentStudentId}&name=${encodeURIComponent(stName)}`;
+        }
+
+        window.changeMonth = function(dir) {
+            currentDate.setMonth(currentDate.getMonth() + dir);
+            selectedDateStr = getLocalISODate(currentDate); 
+            renderCalendar();
+            renderTasksForSelectedDate();
+        };
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('calMonthYear').textContent = new Date(year, month).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const startDay = firstDay === 0 ? 6 : firstDay - 1; 
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const grid = document.getElementById('calGridDays');
+            grid.innerHTML = '';
+
+            for(let i=0; i<startDay; i++) { grid.innerHTML += `<div class="cal-day empty"></div>`; }
+
+            for(let i=1; i<=daysInMonth; i++) {
+                const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                const hasTask = allTasks.some(t => t.date === dStr);
+                const taskClass = hasTask ? 'has-task' : '';
+                const activeClass = dStr === selectedDateStr ? 'active' : '';
+
+                grid.innerHTML += `<div class="cal-day ${taskClass} ${activeClass}" onclick="selectDate('${dStr}')">${i}</div>`;
+            }
+        }
+
+        window.selectDate = function(dateStr) {
+            selectedDateStr = dateStr;
+            renderCalendar(); 
+            renderTasksForSelectedDate();
+        };
+
+        window.assignTask = async function() {
+            if(!currentStudentId) return;
+            const desc = document.getElementById('taskDesc').value;
+            if(!desc) return alert("Lütfen görev açıklaması girin.");
+            
+            await window.addTask(currentStudentId, selectedDateStr, desc);
+            document.getElementById('taskDesc').value = '';
+            
+            allTasks = await window.getTasks(currentStudentId);
+            renderCalendar();
+            renderTasksForSelectedDate();
+        }
+
+        window.removeTask = async function(taskId) {
+            if(confirm("Bu görevi silmek istediğine emin misin?")) {
+                await window.deleteTask(taskId);
+                allTasks = await window.getTasks(currentStudentId);
+                renderCalendar();
+                renderTasksForSelectedDate();
+            }
+        }
+
+        function renderTasksForSelectedDate() {
+            const parts = selectedDateStr.split('-');
+            const trDate = new Date(parts[0], parts[1]-1, parts[2]).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('selectedDateText').textContent = trDate;
+
+            const list = document.getElementById('taskList');
+            const todaysTasks = allTasks.filter(t => t.date === selectedDateStr);
+            
+            list.innerHTML = '';
+            if(todaysTasks.length === 0) {
+                list.innerHTML = '<li style="justify-content:center; opacity:0.6;">Bu güne ait görev yok. Hemen yukarıdan ekle.</li>'; return;
+            }
+
+            todaysTasks.forEach(t => {
+                const statusBadge = t.completed ? `<span class="task-badge bg-green">YAPILDI</span>` : `<span class="task-badge bg-red">BEKLİYOR</span>`;
+                
+                list.innerHTML += `
+                    <li>
+                        <div style="display:flex; flex-direction:column; gap:5px; flex:1;">
+                            <strong style="font-size: 0.95rem;">${t.description}</strong>
+                            <div>${statusBadge}</div>
+                        </div>
+                        <button class="btn" style="background: transparent; border: none; color: #e74c3c; font-size: 1.2rem; cursor:pointer;" onclick="removeTask('${t.id}')">🗑️</button>
+                    </li>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

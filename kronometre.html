@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Kronometre</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<div class="top-left-controls">
+        <a href="profil.html" class="profile-btn req-auth" id="profileBtnText">?</a>
+    </div>
+    
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()" title="Tema">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()" title="Menü">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="koc-paneli.html" class="teacher-only">Koç Paneli</a>
+            <a href="gorevler.html" class="student-only req-auth">Görevlerim</a>
+            <a href="tyt.html" class="student-only">TYT Sayacı</a>
+            <a href="ayt.html" class="student-only">AYT Sayacı</a>
+            <a href="kronometre.html" class="student-only">Kronometre</a>
+            <a href="pomodoro.html" class="student-only">Pomodoro</a>
+            <a href="sureler.html" class="student-only req-auth">Tutulan Süreler</a>
+            <a href="denemeler.html" class="student-only req-auth">Denemelerim</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <h1>Serbest Kronometre</h1>
+        
+        <div class="timer-wrapper">
+            <svg class="timer-svg" xmlns="http://www.w3.org/2000/svg">
+                <rect class="progress-rect" id="swRect" x="3" y="3" width="calc(100% - 6px)" height="calc(100% - 6px)" rx="15" pathLength="60" stroke-dasharray="60" stroke-dashoffset="60"></rect>
+            </svg>
+            <div class="timer-text" id="swDisplay">00:00:00</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+            <button class="btn" id="startBtn" onclick="startSw()">Başlat</button>
+            <button class="btn" id="pauseBtn" onclick="pauseSw()">Durdur</button>
+            <button class="btn" onclick="saveSw()">Kaydet & Sıfırla</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pomoSuggestModal" style="display: none; z-index: 9999;">
+        <div class="modal-content" style="border: 2px solid #e74c3c;">
+            <h2>💡 Verimini Artırmak İster Misin?</h2>
+            <p>Serbest kronometre yerine, bilimsel olarak kanıtlanmış 25 ve 60 dakikalık bloklarla çalışıp yorulmadan ilerlemek için <b>Pomodoro</b> modumuzu denemek ister misin?</p>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 1rem;">
+                <button class="btn" style="background: var(--bg-color); color: var(--text-color);" onclick="closePomoModal()">Hayır, kronometrede kal</button>
+                <button class="btn" style="background: #e74c3c;" onclick="window.location.href='pomodoro.html'">Pomodoro'ya Git</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sayfa yüklendikten 1 saniye sonra bir kere sor
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if(!sessionStorage.getItem('pomoSuggested')) {
+                    document.getElementById('pomoSuggestModal').style.display = 'flex';
+                    sessionStorage.setItem('pomoSuggested', 'true');
+                }
+            }, 1000);
+        });
+        function closePomoModal() { document.getElementById('pomoSuggestModal').style.display = 'none'; }
+    </script>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        let swTime = 0;
+        let swTimer = null;
+        let isRunning = false;
+
+        function updateSwDisplay() {
+            document.getElementById('swDisplay').textContent = formatTime(swTime);
+            document.getElementById('swRect').style.strokeDashoffset = 60 - (swTime % 60);
+        }
+
+        function startSw() {
+            if(isRunning) return;
+            isRunning = true;
+            document.getElementById('startBtn').disabled = true;
+            swTimer = setInterval(() => { swTime++; updateSwDisplay(); }, 1000);
+        }
+
+        function pauseSw() {
+            clearInterval(swTimer);
+            isRunning = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').textContent = "Devam Et";
+        }
+
+        function saveSw() {
+            clearInterval(swTimer);
+            if(swTime > 0 && confirm("Süreyi kaydetmek istiyor musun?")) {
+                const records = JSON.parse(localStorage.getItem('yksRecords')) || [];
+                const d = new Date();
+                records.push({
+                    type: 'Serbest', // Tür belirtildi
+                    date: d.toLocaleDateString('tr-TR') + " " + d.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'}),
+                    duration: formatTime(swTime)
+                });
+                localStorage.setItem('yksRecords', JSON.stringify(records));
+                alert("Başarıyla kaydedildi! Tutulan Süreler sekmesinden görebilirsin.");
+            }
+            swTime = 0; isRunning = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').textContent = "Başlat";
+            updateSwDisplay();
+        }
+        updateSwDisplay();
+    </script>
+</body>
+</html>

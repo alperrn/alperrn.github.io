@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Öğrenci Analizi</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container { width: 100%; max-width: 600px; height: 350px; margin: 1rem auto; background: var(--bg-color); padding: 1rem; border-radius: 12px; }
+        .data-list { list-style: none; width: 100%; text-align: left; max-height: 300px; overflow-y: auto; padding-right: 5px;}
+        .data-card { background: var(--bg-color); border: 1px solid var(--border-color); padding: 1rem; border-radius: 12px; margin-bottom: 0.8rem; }
+        .tag { font-size: 0.75rem; padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 600; color: white;}
+        .tag.tyt { background-color: #3498db; } .tag.ayt { background-color: #9b59b6; } .tag.serbest { background-color: #e67e22; } .tag.pomo { background-color: #e74c3c; }
+        .section-box { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+
+    <div class="top-left-controls"><a href="profil.html" class="profile-btn" id="profileBtnText">?</a></div>
+
+    <div class="top-right-controls">
+        <button class="icon-btn theme-btn" onclick="toggleTheme()"><svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></button>
+        <button class="icon-btn menu-btn" onclick="toggleMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+    </div>
+
+    <div class="side-menu" id="sideMenu">
+        <nav>
+            <a href="index.html">Ana Sayfa</a>
+            <a href="koc-paneli.html" class="teacher-only" style="background: var(--btn-bg); color: var(--btn-text);">Koç Paneli</a>
+        </nav>
+    </div>
+
+    <div class="container" style="max-width: 800px; width: 95%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 1rem;">
+            <button class="btn" style="background: transparent; border: 2px solid var(--border-color); color: var(--text-color);" onclick="window.history.back()">❮ Geri Dön</button>
+            <h1 style="margin: 0; font-size: 1.5rem;">🎓 <span id="stNameTitle" style="color: var(--btn-bg);">Öğrenci</span> Analizi</h1>
+        </div>
+
+        <div class="section-box">
+            <h3>📈 Deneme Gelişimi</h3>
+            <div style="display: flex; gap: 10px; justify-content: center; margin: 1rem 0;">
+                <button class="pomo-btn active" id="btnGraphTYT" onclick="updateChart('TYT')">TYT Netleri</button>
+                <button class="pomo-btn" id="btnGraphAYT" onclick="updateChart('AYT')">AYT Netleri</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="netChart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+            
+            <h4 style="text-align: left; margin-top: 1rem;">Son Denemeler</h4>
+            <ul class="data-list" id="examList">
+                <li style="text-align:center; opacity:0.6;">Yükleniyor...</li>
+            </ul>
+        </div>
+
+        <div class="section-box">
+            <h3>⏱️ Son Çalışma Süreleri (Sayac & Pomodoro)</h3>
+            <ul class="data-list" id="recordList">
+                <li style="text-align:center; opacity:0.6;">Yükleniyor...</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        let myChart = null;
+        let stExams = [];
+        let stRecords = [];
+        let targetStudentId = null;
+
+        window.addEventListener('load', () => {
+            setTimeout(async () => {
+                if(localStorage.getItem('userRole') !== 'teacher') {
+                    alert("Yetkisiz erişim!"); window.location.href = "index.html"; return;
+                }
+
+                // URL'den öğrenci ID'sini ve adını al (örn: ?id=123&name=Ali)
+                const urlParams = new URLSearchParams(window.location.search);
+                targetStudentId = urlParams.get('id');
+                const studentName = urlParams.get('name');
+
+                if(!targetStudentId) { alert("Öğrenci bulunamadı."); window.location.href = "koc-paneli.html"; return; }
+                
+                document.getElementById('stNameTitle').textContent = studentName || "Öğrenci";
+
+                // Verileri çek
+                stExams = await window.getCloudExams(targetStudentId);
+                stRecords = await window.getCloudRecords(targetStudentId);
+
+                renderExams();
+                renderRecords();
+                updateChart('TYT');
+            }, 800);
+        });
+
+        function renderExams() {
+            const list = document.getElementById('examList');
+            list.innerHTML = '';
+            if(stExams.length === 0) { list.innerHTML = '<li style="text-align:center; opacity:0.6;">Öğrenci henüz deneme kaydetmemiş.</li>'; return; }
+
+            stExams.forEach(ex => {
+                let tagColor = ex.type === 'TYT' ? '#3498db' : '#9b59b6';
+                let alanTag = ex.alan ? ` - ${ex.alan}` : '';
+                
+                list.innerHTML += `
+                    <li class="data-card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <strong style="font-size: 1.1rem;">${ex.name}</strong>
+                            <span style="font-size: 0.85rem; opacity: 0.8;">📅 ${ex.date} | <span style="color:${tagColor}; font-weight:bold;">${ex.type}${alanTag}</span></span>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong style="font-size: 1.2rem; color: var(--text-color);">${ex.net.toFixed(2)} Net</strong>
+                            <div style="font-size: 0.8rem; opacity: 0.8;">${ex.dogru}D ${ex.yanlis}Y</div>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        function renderRecords() {
+            const list = document.getElementById('recordList');
+            list.innerHTML = '';
+            if(stRecords.length === 0) { list.innerHTML = '<li style="text-align:center; opacity:0.6;">Öğrenci henüz süre kaydetmemiş.</li>'; return; }
+
+            stRecords.forEach(r => {
+                let tagClass = r.type === 'TYT' ? 'tyt' : (r.type === 'AYT' ? 'ayt' : (r.type === 'Pomodoro' ? 'pomo' : 'serbest'));
+                list.innerHTML += `
+                    <li class="data-card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span class="tag ${tagClass}">${r.type}</span>
+                            <span style="margin-left: 10px; font-size: 0.9rem; opacity: 0.8;">${r.date}</span>
+                        </div>
+                        <strong style="font-family: 'Roboto Mono', monospace;">${r.duration}</strong>
+                    </li>
+                `;
+            });
+        }
+
+        window.updateChart = function(type) {
+            document.getElementById('btnGraphTYT').classList.remove('active');
+            document.getElementById('btnGraphAYT').classList.remove('active');
+            document.getElementById('btnGraph' + type).classList.add('active');
+
+            const filteredExams = stExams.filter(e => e.type === type).reverse();
+            const labels = filteredExams.map(e => e.date.substring(5));
+            const dataPoints = filteredExams.map(e => parseFloat(e.net.toFixed(2)));
+
+            const ctx = document.getElementById('netChart').getContext('2d');
+            if(myChart) myChart.destroy(); 
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: type + ' Net İlerlemesi', data: dataPoints,
+                        borderColor: type === 'TYT' ? '#3498db' : '#9b59b6',
+                        backgroundColor: type === 'TYT' ? 'rgba(52, 152, 219, 0.2)' : 'rgba(155, 89, 182, 0.2)',
+                        borderWidth: 3, tension: 0.3, fill: true
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: type === 'TYT' ? 120 : 80 } },
+                    plugins: { legend: { labels: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#000' } } }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
